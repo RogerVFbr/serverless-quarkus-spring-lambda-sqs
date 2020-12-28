@@ -37,11 +37,10 @@ The following instructions should allow the developer to build, execute and depl
 on his AWS Account.
 
 ## Contents
-* [Stack](#pre-requisitos)
-* [Installation](#instalacao)
-* [Build and deploy](#Deploy)
-* [Endpoints](#endpoints)
-* [Tests](#testes-)
+* [Stack](#stack)
+* [Installation](#installation)
+* [Deploy and remove stack](#deploy-and-remove-stack)
+* [Testing the endpoints](#testing-the-endpoints)
 
 ## Stack
 * [Java JDK 1.8](https://www.oracle.com/java/technologies/javase-jdk8-downloads.html) or [11](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) - Required Java version. **1.8** will work, but **11** is preferred. 
@@ -60,7 +59,7 @@ The following steps should be executed from the command terminal of your operati
 
 1. Make a local copy of this repository.
     ```
-    git clone <REPOSITORY_NAME>
+    git clone https://github.com/RogerVFbr/serverless-quarkus-spring-lambda-sqs.git
     ```
 
 2. Install the *Serverless Framework* if not already done.
@@ -72,10 +71,10 @@ The following steps should be executed from the command terminal of your operati
     ```
     npm install
     ```
-4. Use your **pom.xml** to update the project's dependencies.
+4. Open the project in your preferred IDE and use your **pom.xml** to update the project's dependencies.
 
-## Service Credentials
-It's strongly advisable, and a good practice to provide a new IAM user for each new created service
+## Service credentials
+It's strongly advisable, and a good practice to provide a new IAM user for each newly created service
 for security purposes. Whether you create a new IAM user or reuse one, you will need it
 to have the proper *policies* attached so you can actually deploy the service via infrastucture-as-code
 (*Serverless Framework*). Make sure the IAM user you choose for this project has at least full 
@@ -171,20 +170,3 @@ if you need to double check the endpoints' base URLs at AWS, run from the projec
 ```
 sls info --aws-profile quarkus_sqs
 ```
-
-## Testes
-Testes unitários:
-```
-mvn test
-```
-
-Testes de integração (manuais)
-Execute o projeto e utilize a interface do Swagger para gerar CURL.
-```
-http://localhost:8080/api/swagger-ui.html
-```
-
-Smoke tests (somente IntelliJ):
-Utilizar testes contidos na pasta *smoketests*. Caso for testar remoto, atualize os endereços
-em *http-client.env.json*.
-
