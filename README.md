@@ -8,18 +8,18 @@ so no local GraalVM installation is required.
 ## Introduction
 
 The single most troublesome characteristic of cloud functions is the **cold start**, which adds uncomfortable
-amounts of delay to the completion of a function's execution, after it being dormant or not used for longer periods
-of time (usually around 5 minutes, depending mainly on resources' availability on AWS and amount of allocated
-memory). This feature becomes even worse when writing cloud functions in *compiled languages*, such as
-Java or C#, making a single cold start worth over 10 or even 15 seconds of delay, rendering such solutions **impractical
-for latency sensitive applications**, such as APIs serving end users via mobile or web clients.
+amounts of delay to the completion of a function's execution. After being dormant for longer periods
+of time (usually around 5 minutes, depending on different factors) the function container shuts down 
+and needs to be restarted. This feature manifests dramatically when writing cloud functions in 
+*compiled languages*, such as Java or C#, making a single cold start worth over 10 or even 15 seconds 
+of delay, rendering such solutions **impractical for latency sensitive applications**, such as APIs 
+serving end users via mobile or web clients.
 
 Another cumbersome aspect of cloud function programming, is the fact that in the standard approach of
-writing APIs with them, each endpoint's verb ends up getting assigned to a single function, making such architecture
-**highly coupled to the infrastucture** and usually **depadronized**.
+writing APIs with them, each endpoint's verb ends up getting assigned to a single function, making 
+such architecture **highly coupled to the infrastucture** and usually **less than standardized**.
 
-The architectural attempt presented in this POC aims to approach these two topics by providing the
-following solutions:
+The architectural attempt presented in this POC aims to approach these two topics through:
 * **A single cloud function must serve the entire API**. This approach allows the usage of tried
   and tested frameworks, in this case *Spring*, in the form of Quarkus Spring Extensions, permiting 
   as such a standardized development pattern. This general concept would allow the API to be easily
@@ -28,9 +28,10 @@ following solutions:
 
 * **Usage of lightning fast application initialization solution.** Java/Spring applications were not 
   designed to have a fast startup procedure. Their original idea is to be instantiated once and 
-  respond to requests while staying up. The revolutionary [Quarkus](https://quarkus.io/) framework 
-  supplies an incredibly fast boot time (usually under 0.5s), providing the startup agility one would
-  need to run a Java application on a cloud function, hence completely mitigating the cold start issue.
+  respond to requests while staying up. The [Quarkus](https://quarkus.io/) framework 
+  supplies an incredibly fast boot time (usually under 0.5s) with a Spring "Façade" for a fraction 
+  of the usual computational resources. It provides the startup agility one would need to mitigate the
+  cold start issue and run a *smoothly auto-scaling* Java application on a cloud function.
   
 
 The following instructions should allow the developer to build, execute and deploy a copy of this project locally and
@@ -54,8 +55,7 @@ on his AWS Account.
 ## Installation
 Make sure you install and confirm the installation of the pre-required technologies if not already 
 done *(Java JDK, Maven, IDE's Lombok Plugin, NodeJS 12+, Git)*. Details on how this should be done 
-will not be covered on this documentation and should be looked for individually at each vendor's resource.
-The following steps should be executed from the command terminal of your operational system:
+will not be covered on this doc. Execute from the command terminal:
 
 1. Make a local copy of this repository.
     ```
@@ -73,18 +73,16 @@ The following steps should be executed from the command terminal of your operati
     ```
 4. Open the project in your preferred IDE and use your **pom.xml** to update the project's dependencies.
 
-## Service credentials
-It's strongly advisable, and a good practice to provide a new IAM user for each newly created service
-for security purposes. Whether you create a new IAM user or reuse one, you will need it
-to have the proper *policies* attached so you can actually deploy the service via infrastucture-as-code
-(*Serverless Framework*). Make sure the IAM user you choose for this project has at least full 
+## Set AWS service credentials
+It's strongly advisable, and a good practice to provide a new IAM user for this service. 
+It will need the proper *policies*  attached so you can deploy the service via infrastucture-as-code
+(*Serverless Framework*). Make sure the IAM user you choose for this project has wide 
 access to Lambda, SQS, Cloudformation and Cloudwatch resources. For production, further permissions
 limiting may be required.
 
 This service's deployment scripts depend entirely on the profile generated by the process below,
-so they **won't work** if you skip this step and use your default credentials. You can also use
-your default credentials, just make sure you also register them on the service's profile following the 
-steps below.
+so they **won't work** if you skip this step. You can also use your default credentials, just make 
+sure you also register them on the service's profile, as follows:
 
 1. Obtain or generate the AWS IAM credentials to be used on this service and retrieve 
    it's **ACCESS KEY ID** and **SECRET ACCESS KEY**. If you're unsure on how to create an IAM user,
@@ -92,8 +90,9 @@ steps below.
 
 
 2. Use provided script to generate a local profile with the acquired credentials by running the 
-   command below from the project's root folder. Pay extra attention to the syntax with double 
-   dashes and spacing.
+   command below from the project's root folder. *Pay close attention to the syntax with double 
+   dashes and spacing*. Replace **<ACCESS_KEY_ID>** and **<SECRET_ACCESS_KEY>** by your aqcuired 
+   credentials.
 
     ```
     npm run set-service-credentials -- --key <ACCESS_KEY_ID> --secret <SECRET_ACCESS_KEY>
@@ -104,38 +103,48 @@ steps below.
 
 ## Deploy and remove stack
 For the sake of simplicity and cross-platform availability, the command sequences and 
-parameterization required to build and deploy this project were encapsulated on *package.json*'s 
-scripts section. If you need any further details about how the process is being done, you can refer 
-to it.
+parameterization were encapsulated on *package.json*'s scripts section. You can refer 
+to it for further details. As a suggested workflow, proceed as follows:
+* Deploy the project once to update the infrastructure.
+* Work/Debug locally.
+* When ready, deploy the project again, test remotelly.
 
-#### Deploy stack
-The deploy command will build and deploy two Lambdas linked to an API Gateway, containing each a 
-different version of the API's code. The first one will be deployed as the JVM version, using AWS's 
-Java 8 runtime, and the second will provide a native version running on a custom runtime. Each 
-version will be built on its proprietary *target* folder (*target* and *target-native*) and will 
-also have its own root path, so you can check the different response time characteristics, 
-specially the *[cold starts](https://aithority.com/it-and-devops/cloud/5-ways-to-prevent-aws-lambda-cold-starts/)*.
-The process will also attempt to set the terminal Java version to 11 before building.
+### Deploy stack to AWS
 
 To deploy the service stack, execute from the project's root folder:
 ```
+# LINUX & MAC
 npm run deploy
-```
 
-#### Remove stack
+# WINDOWS
+npm run deploy-win
+```
+The **deploy command** will build and deploy two Lambdas linked to an API Gateway, containing each a 
+different version of the API's code. The first one will be deployed as the JVM version, using AWS's 
+Java 8 runtime, and the second will provide a native version running on a custom runtime. Each 
+version will be built on its proprietary *target* folder (*target* and *target-native*) and will 
+also have its own root path, so you can compare the different response time characteristics, 
+specially the *[cold starts](https://aithority.com/it-and-devops/cloud/5-ways-to-prevent-aws-lambda-cold-starts/)*.
+On Macs, the process will also attempt to set the terminal Java version to 11 before building. Full deployment
+time including build (JVM/Native) and actual deployment might be between 3-4mins.
+
+### Remove stack
 To completely remove the stack from your AWS account, execute from the project's root:
 ```
+# ALL PLATFORMS
 npm run remove
 ```
 
-#### Running locally
-To run the API locally, you can execute the provided script from the project's root. The script will
-also parse the environment variables located in the **serverless.yml** definition and provide
-them at runtime, so you can access your newly created SQS queue. You will have to deploy the
-stack before running locally or else it won't be able to access the queue.
+### Running locally
+To run the API locally, execute from the project's root:
 ```
+# ALL PLATFORMS
 npm run start-local
 ```
+The script will also parse the environment variables located in the **serverless.yml** definition and provide
+them at runtime, so you can access your newly created SQS queue. You will have to deploy the
+stack before running locally or else it won't be able to access the queue.
+
 
 ## Testing the endpoints
 After deploying the stack to AWS, the *Serverless Framework* will provide the endpoint base URLs.
@@ -153,6 +162,8 @@ curl -v -d '{"attributeName2": "attributeValue2"}' -H 'Content-Type: application
 # LOCAL
 curl -v -d '{"attributeName3": "attributeValue3"}' -H 'Content-Type: application/json' http://localhost:8080/sqs
 ```
+   **Note for Windows users.** CURL notation on Windows terminals replaces single quotes by double 
+   quotes and inner double quotes must be escaped by a backslash: "{\"attributeName3\": \"attributeValue3\"}"
 
 To GET the SQS content, run the following command on the terminal:
 ```
