@@ -6,7 +6,8 @@ of the Quarkus SQS extension. The concept provides both JVM and native versions 
 so no local GraalVM installation is required.
 
 ## Contents
-* [Stack](#stack)
+* [Introduction](#introduction)
+* [Technology stack](#technology-stack)
 * [Installation](#installation)
 * [Set AWS service credentials](#set-aws-service-credentials)
 * [Deploy and remove stack](#deploy-and-remove-stack)
@@ -44,7 +45,7 @@ The architectural attempt presented in this POC aims to approach these two topic
 The following instructions should allow the developer to build, execute and deploy a copy of this project locally and
 on his AWS Account.
 
-## Stack
+## Technology stack
 * [Java JDK 1.8](https://www.oracle.com/java/technologies/javase-jdk8-downloads.html) or [11](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) - Required Java version. **1.8** will work, but **11** is preferred. 
 * [Maven 3](https://maven.apache.org/) - Dependency and build management.
 * [Lombok Plugin](https://projectlombok.org/) - Make sure your IDE supports **Lombok**.
@@ -156,13 +157,13 @@ curl -v -d '{"attributeName3": "attributeValue3"}' -H 'Content-Type: application
 To GET the SQS content, run the following command on the terminal:
 ```
 # JVM ENDPOINT
-curl -v -i -X GET <REPLACE_BY_THE_BASE_URL>/dev/jvm/sqs
+curl -v GET <REPLACE_BY_THE_BASE_URL>/dev/jvm/sqs
 
 # NATIVE ENDPOINT
-curl -v -i -X GET <REPLACE_BY_THE_BASE_URL>/dev/native/sqs
+curl -v GET <REPLACE_BY_THE_BASE_URL>/dev/native/sqs
 
 # LOCAL
-curl -v -i -X GET http://localhost:8080/sqs
+curl -v GET http://localhost:8080/sqs
 ```
 
 if you need to double check the endpoints' base URLs at AWS, run from the project root:
